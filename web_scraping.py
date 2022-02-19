@@ -37,11 +37,11 @@ def job():
     df1 = web_scrape(file_url['url_list'].iloc[0])
     df = df1.iloc[:, 0:3]
     
-    h5File = (today + '_d_web_scrape.h5')
+    h5File = (today + '_web_scrape.h5')
     df.to_hdf(h5File, 'w')
     print("wrote hdf5 file done")   
     
-schedule.every().day.at("10:30").do(job)
+#schedule.every().day.at("10:30").do(job)
 
 if __name__ == "__main__":
     job()
