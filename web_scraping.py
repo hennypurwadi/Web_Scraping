@@ -41,7 +41,7 @@ def job():
     df.to_hdf(h5File, 'w')
     print("wrote hdf5 file done")   
     
-#schedule.every(1).minutes.do(job) 
+#schedule.every().day.at("10:30").do(job)
 
 if __name__ == "__main__":
     job()
