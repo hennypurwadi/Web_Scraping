@@ -3,7 +3,7 @@ To help decision maker to make strategic decision, we demonstrate web scrapping 
 df1 = web_scrape(file_url['url_list'].iloc[0])
 df = df1.iloc[:, 0:3]
 
-###url_list:
+url_list:
 
 https://finance.yahoo.com/cryptocurrencies/
 
