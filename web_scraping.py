@@ -6,7 +6,6 @@ import datetime
 from datetime import datetime, timedelta
 import time
 import schedule
-from pytrends import dailydata
 import numpy as np
 import h5py
 
