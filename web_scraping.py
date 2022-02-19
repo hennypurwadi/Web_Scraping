@@ -6,7 +6,6 @@ import datetime
 from datetime import datetime, timedelta
 import time
 import schedule
-import numpy as np
 import h5py
 
 import warnings
