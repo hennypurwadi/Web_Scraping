@@ -31,13 +31,20 @@ def web_scrape(url):
     return pd.DataFrame(r_data)
 
 def job():
-
+    
+    #https://finance.yahoo.com/gainers
     df0 = web_scrape(file_url['url_list'].iloc[0])
     df00 = df0.iloc[:, 0:3]
+
+    #https://finance.yahoo.com/currencies
     df1 = web_scrape(file_url['url_list'].iloc[1])
     df01 = df1.iloc[:, 0:3]
+
+    #https://coinmarketcap.com/nft/collections/
     df2 = web_scrape(file_url['url_list'].iloc[2])
-    df02 = df2.iloc[:, 0:3]
+    df02 = df2.iloc[:, 0:5]
+
+    #https://finance.yahoo.com/cryptocurrencies/
     df3 = web_scrape(file_url['url_list'].iloc[3])
     df03 = df3.iloc[:, 0:3]
     
