@@ -23,11 +23,11 @@ def web_scrape(url):
     r_data = {header:[] for header in headers}
 
     for rows in Bsoup.find_all('tbody'):
-      for row in rows.find_all('tr'):
+          for row in rows.find_all('tr'):
         
-        if len(row) != len(headers): continue
-        for idx, cell in enumerate(row.find_all('td')):
-              r_data[headers[idx]].append(cell.text)
+            if len(row) != len(headers): continue
+            for idx, cell in enumerate(row.find_all('td')):
+                  r_data[headers[idx]].append(cell.text)
     return pd.DataFrame(r_data)
 
 def job():
