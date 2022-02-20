@@ -30,17 +30,25 @@ def web_scrape(url):
               r_data[headers[idx]].append(cell.text)
     return pd.DataFrame(r_data)
 
-
 def job():
 
-    df1 = web_scrape(file_url['url_list'].iloc[0])
-    df = df1.iloc[:, 0:3]
+    df0 = web_scrape(file_url['url_list'].iloc[0])
+    df00 = df0.iloc[:, 0:3]
+    df1 = web_scrape(file_url['url_list'].iloc[1])
+    df01 = df1.iloc[:, 0:3]
+    df2 = web_scrape(file_url['url_list'].iloc[2])
+    df02 = df2.iloc[:, 0:3]
+    df3 = web_scrape(file_url['url_list'].iloc[3])
+    df03 = df3.iloc[:, 0:3]
+    
+    #chosen url
+    df = df03 
     
     h5File = (today + '_web_scrape.h5')
     df.to_hdf(h5File, 'w')
     print("wrote hdf5 file done")   
     
-#schedule.every().day.at("10:30").do(job)
+schedule.every().day.at("10:30").do(job)
 
 if __name__ == "__main__":
     job()
