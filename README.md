@@ -10,3 +10,5 @@ https://coinmarketcap.com/nft/collections/
 
 https://finance.yahoo.com/cryptocurrencies/
 
+https://trends.google.com/trends/explore
+
