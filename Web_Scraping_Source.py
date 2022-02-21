@@ -4,6 +4,8 @@
 # In[1]:
 
 
+#https://github.com/hennypurwadi/Web_Scraping
+
 import requests 
 import pandas as pd 
 import matplotlib.pyplot as plt
@@ -202,7 +204,7 @@ hf = pd.read_hdf(h5File)
 hf.head(2)
 
 
-# # Merge datasets collected from several days
+# ## Collect daily datas
 
 # In[11]:
 
@@ -224,7 +226,7 @@ hf220220 = hf220220.drop(columns=['Name'])
 hf220220.head(2)
 
 
-# In[13]:
+# In[73]:
 
 
 #day03
@@ -234,7 +236,9 @@ hf220221 = hf220221.drop(columns=['Name'])
 hf220221.head(2)
 
 
-# In[68]:
+# ## Merge collected datasets 
+
+# In[14]:
 
 
 #Merge datasets become one
@@ -246,19 +250,21 @@ hfmerged = hfmerged.iloc[0:2]
 hfmerged
 
 
-# In[69]:
+# In[15]:
 
 
 print(hfmerged.isnull().sum())
 
 
-# In[70]:
+# In[16]:
 
 
 hfmerged.dtypes
 
 
-# In[62]:
+# ## Change types from str become float
+
+# In[17]:
 
 
 #Split decimals then removed
@@ -270,7 +276,7 @@ hfmerged = hfmerged.drop(columns=['2022-02-19', '2022-02-19B','2022-02-20', '202
 hfmerged.head(2)
 
 
-# In[63]:
+# In[18]:
 
 
 #Remove comma inside values. Otherwise can't convert them into float
@@ -281,7 +287,7 @@ hfmerged['20220221'] = hfmerged[('20220221')].replace(',','', regex=True)
 hfmerged.head(2)
 
 
-# In[64]:
+# In[19]:
 
 
 #Change dtypes from str become float
@@ -292,24 +298,77 @@ hfmerged['20220221'] = hfmerged[('20220221')].astype(float)
 hfmerged.dtypes
 
 
-# In[65]:
+# In[20]:
 
 
 hfmerged = hfmerged.iloc[0:2]
 hfmerged
 
 
-# In[66]:
+# In[70]:
 
 
-#Transpose
+#Transpose row become columns
+
 hfmerged_T = hfmerged.set_index('Symbol').T
 hfmerged_T.head(5)
 
 
-# # writefile to .py files
+# In[71]:
+
+
+#Plot BTC Time Series
+plt.style.use("fivethirtyeight")
+plt.figure(figsize=(5, 3))
+
+plt.xlabel("Date")
+plt.ylabel("Values")
+plt.title("BTC-USD Time Series Plot")
+ 
+# plotting the columns
+plt.plot(hfmerged_T["BTC-USD"], label = 'BTC-USD', color = 'r')
+plt.legend()
+plt.savefig("BTC_Time Series_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
+
+
+# In[72]:
+
+
+#Plot ETH Time Series
+plt.style.use("fivethirtyeight")
+plt.figure(figsize=(5, 3))
+
+plt.xlabel("Date")
+plt.ylabel("Values")
+plt.title("ETH-USD Time Series Plot")
+ 
+# plotting the columns
+plt.plot(hfmerged_T["ETH-USD"], label = 'ETH-USD')
+plt.legend()
+plt.savefig("ETH_Time Series_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
+
 
 # In[67]:
+
+
+#Plot BTC and ETH Time Series
+plt.style.use("fivethirtyeight")
+plt.figure(figsize=(7, 3))
+
+plt.xlabel("Date")
+plt.ylabel("Values")
+plt.title("BTC and ETH Time Series Plot")
+ 
+# plotting the columns
+plt.plot(hfmerged_T["ETH-USD"], label = 'ETH-USD')
+plt.plot(hfmerged_T["BTC-USD"], label = 'BTC-USD', color = 'r')
+plt.legend()
+plt.savefig("BTC_ETH_Time Series_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
+
+
+# # writefile to .py files
+
+# In[22]:
 
 
 get_ipython().run_cell_magic('writefile', 'web_scraping.py', '\nimport requests \nimport pandas as pd \nfrom bs4 import BeautifulSoup \nimport datetime\nfrom datetime import datetime, timedelta\nimport time\nimport schedule\nimport h5py\n\nimport warnings\nwarnings.filterwarnings(\'ignore\')\n\ntoday = datetime.now().date()\ntoday = str(today)\n\nfile_url = pd.read_csv(\'url.csv\')\n\ndef web_scrape(url):\n    \n    Bsoup = BeautifulSoup(requests.get(url).text)\n    headers = [header.text for listing in Bsoup.find_all(\'thead\') for header in listing.find_all(\'th\')]\n    r_data = {header:[] for header in headers}\n\n    for rows in Bsoup.find_all(\'tbody\'):\n          for row in rows.find_all(\'tr\'):\n        \n            if len(row) != len(headers): continue\n            for idx, cell in enumerate(row.find_all(\'td\')):\n                  r_data[headers[idx]].append(cell.text)\n    return pd.DataFrame(r_data)\n\ndef job():\n    \n    #https://finance.yahoo.com/gainers\n    df0 = web_scrape(file_url[\'url_list\'].iloc[0])\n    df00 = df0.iloc[:, 0:3]\n\n    #https://finance.yahoo.com/currencies\n    df1 = web_scrape(file_url[\'url_list\'].iloc[1])\n    df01 = df1.iloc[:, 0:3]\n\n    #https://coinmarketcap.com/nft/collections/\n    df2 = web_scrape(file_url[\'url_list\'].iloc[2])\n    df02 = df2.iloc[:, 0:5]\n\n    #https://finance.yahoo.com/cryptocurrencies/\n    df3 = web_scrape(file_url[\'url_list\'].iloc[3])\n    df03 = df3.iloc[:, 0:3]\n    \n    #chosen url\n    df = df03 \n    \n    h5File = (today + \'_web_scrape.h5\')\n    df.to_hdf(h5File, \'w\')\n    print("wrote hdf5 file done")   \n    \nschedule.every().day.at("10:30").do(job)\n\nif __name__ == "__main__":\n    job()')
@@ -330,7 +389,7 @@ get_ipython().run_cell_magic('writefile', 'web_scraping.py', '\nimport requests 
 # 
 # 7.To delete a task, right-click it and select the Delete option.
 
-# In[47]:
+# In[23]:
 
 
 from datetime import datetime
@@ -340,7 +399,7 @@ with open('timestamps.txt','a+') as file:
 
 # ### Collect BTH and ETH from Google Trends using pytrends
 
-# In[48]:
+# In[24]:
 
 
 #https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
@@ -383,7 +442,7 @@ df_trends.columns=['date','BTC-US','ETH-US','BTC-Russia','ETH-Russia','BTC-Ukrai
 #df_trends.tail(5)
 
 
-# In[49]:
+# In[25]:
 
 
 #Save as HDF5 dataset
@@ -398,7 +457,7 @@ df_trends.to_hdf(h5File_df_trends, 'w')
 print('h5File_df_trends file saved')
 
 
-# In[50]:
+# In[26]:
 
 
 #Load the datasets
@@ -406,7 +465,7 @@ hf_trends = pd.read_hdf(h5File_df_trends)
 hf_trends.head(5)
 
 
-# In[51]:
+# In[27]:
 
 
 sns.set(color_codes=True, palette='deep')
@@ -417,7 +476,7 @@ ht.tick_params( which='both', axis='both', labelsize=12)
 plt.savefig("BTC_Google_Trends_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
 
 
-# In[52]:
+# In[28]:
 
 
 sns.set(color_codes=True, palette='deep')
@@ -430,7 +489,7 @@ plt.savefig("ETH_Google_Trends_FEBRUARY2022.jpg",transparent=False, bbox_inches=
 
 # Cryptocurrency use—especially Bitcoin use—has spiked in Afghanistan since the U.S. and its allies chaotically exited the country after a 20-year. Afghanistan has one of the fastest rates of cryptocurrency adoption, according to blockchain analytics firm Chainalysis.A number of high-profile Bitcoin advocates used the situation in Afghanistan last week to make crude jokes, while others made wide-eyed suggestions about the way cryptocurrencies could be used to escape the economic control of repressive regimes. https://decrypt.co/79980/cryptocurrency-save-afghanistan-cardano-ethereum-cofounder
 
-# In[53]:
+# In[29]:
 
 
 #BTC vs ETH trends in Afghanistan
@@ -442,7 +501,7 @@ ht.set_ylabel('Idx Trends')
 plt.savefig("BTCvsETH_US_Google_Trends_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
 
 
-# In[54]:
+# In[30]:
 
 
 #BTC vs ETH trends in Russia
@@ -454,7 +513,7 @@ ht.tick_params( which='both', axis='both', labelsize=11)
 plt.savefig("BTCvsETH_Russia_Google_Trends_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
 
 
-# In[55]:
+# In[31]:
 
 
 #BTC vs ETH trends in Ukraine
@@ -466,7 +525,7 @@ ht.tick_params( which='both', axis='both', labelsize=11)
 plt.savefig("BTCvsETH_Ukraine_Google_Trends_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
 
 
-# In[56]:
+# In[32]:
 
 
 #BTC vs ETH trends in Singapore
@@ -478,7 +537,7 @@ ht.tick_params( which='both', axis='both', labelsize=11)
 plt.savefig("BTCvsETH_Singapore_Google_Trends_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
 
 
-# In[58]:
+# In[33]:
 
 
 #BTC vs ETH trends in Afghanistan
