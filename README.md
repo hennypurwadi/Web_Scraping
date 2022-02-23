@@ -2,14 +2,14 @@ To help decision maker to make strategic decision, we demonstrate web scrapping 
 
 url_list:
 
-https://finance.yahoo.com/gainers
+https://www.google.com/search?&q=bitcoin price in US
 
-https://finance.yahoo.com/currencies
+https://finance.yahoo.com/quote/BTC-USD?p=BTC-USD
 
-https://coinmarketcap.com/nft/collections/
+https://coinmarketcap.com/currencies/bitcoin/
 
-https://finance.yahoo.com/cryptocurrencies/
+https://trends.google.com/trends/explore?date=today%201-m&geo=US&q=bitcoin
 
-https://trends.google.com/trends/explore
+
 
 
