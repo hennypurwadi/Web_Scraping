@@ -25,7 +25,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-# In[ ]:
+# In[2]:
 
 
 #Write header in empty csv file
@@ -37,7 +37,7 @@ with open(filedf, 'a', newline='') as f:
         print("file written")
 
 
-# In[2]:
+# In[3]:
 
 
 #Write url_options.csv
@@ -53,7 +53,7 @@ with open(url_options, 'a', newline='') as f:
         print("file written")
 
 
-# In[3]:
+# In[4]:
 
 
 today = datetime.now().date()
@@ -90,7 +90,7 @@ def job(time, price):
         print("file written")        
 
 
-# In[4]:
+# In[5]:
 
 
 #read url_options.csv
@@ -98,19 +98,19 @@ Some_url = pd.read_csv('url_options.csv')
 Some_url['list_url'].iloc[0]
 
 
-# In[5]:
+# In[6]:
 
 
 btc_price
 
 
-# In[6]:
+# In[7]:
 
 
 get_ipython().run_cell_magic('writefile', 'web_scrape.py', '\nimport requests \nimport pandas as pd \nimport matplotlib.pyplot as plt\nimport seaborn as sns\nfrom bs4 import BeautifulSoup \nimport datetime\nfrom datetime import datetime, timedelta\nimport time\nimport schedule\nimport csv\nimport h5py\nimport pytrends\nfrom pytrends.request import TrendReq\n    \ntoday = datetime.now().date()\ntoday = str(today)\n\nSome_url = pd.read_csv(\'url_options.csv\')\n#url = \'https://www.google.com/search?&q=bitcoin price in US\'\nurl = Some_url[\'list_url\'].iloc[0]\n\nreq = requests.get(url)\nscrap = BeautifulSoup(req.text, \'lxml\')\nbtc_price = scrap.find("div", class_ = "BNeawe iBp4i AP7Wnd").text\n        \ndef job(time, price):\n        \n    filedf = "dailybtcprice.csv"\n    \n    # write new data into csv\n    with open(filedf, \'a\', newline=\'\') as f:\n        writer = csv.writer(f)\n        writer.writerow([today, btc_price])\n        print("new row written")     \n        \nschedule.every().day.at("09:00").do(job)\n\nif __name__ == "__main__":\n    job(today, btc_price)')
 
 
-# In[7]:
+# In[8]:
 
 
 #read dataset csv
@@ -118,7 +118,9 @@ df = pd.read_csv('dailybtcprice.csv')
 df.head(3)
 
 
-# In[8]:
+# ### HDF5
+
+# In[9]:
 
 
 #Create empty HDF file
@@ -129,18 +131,19 @@ filefh = file.create_dataset('dailybtcprice2.h5',(29,6))
 filefh
 
 
-# In[9]:
+# In[10]:
 
 
-#read dataset HDF5
+#write to dataset HDF5
 hf5 = df.to_hdf('dailybtcprice2.h5', 'w')
 #print('hf5 file saved')
 
+#read from dataset HDF5
 file = h5py.File('dailybtcprice2.h5','r+')
 list(file.keys())
 
 
-# In[10]:
+# In[11]:
 
 
 #Load the datasets
@@ -148,16 +151,16 @@ hf = pd.read_hdf('dailybtcprice2.h5')
 hf.head(3)
 
 
-# In[11]:
+# In[12]:
 
 
 #Slice datasets HDF5
 hf['BTC_Price'] = hf['BTC'].str.slice(0, 6)
 hf['BTC_Currency'] = hf['BTC'].str.slice(10, 31)
-hf.head(3)
+hf.tail(3)
 
 
-# In[12]:
+# In[13]:
 
 
 #drop unused Columns in HDF5 file
@@ -165,13 +168,42 @@ hf=hf.drop(['BTC','BTC_Currency'], axis = 1)
 hf.head(3)
 
 
-# In[ ]:
-
-
-
-
-
 # In[14]:
+
+
+hf["Date"].dtypes
+
+
+# In[15]:
+
+
+#Change dtypes from str become float
+
+hf['BTC_Price'] = hf[('BTC_Price')].astype(float)
+hf.dtypes
+
+
+# In[16]:
+
+
+#Plot BTC Time Series
+
+plt.style.use("fivethirtyeight")
+plt.figure(figsize=(12, 4))
+
+plt.xlabel("Date")
+plt.ylabel("Values")
+plt.title("BTC-Price in US Time Series")
+ 
+# plotting the columns
+plt.plot(hf["BTC_Price"], label = 'BTC_Price', color = 'r')
+plt.legend()
+plt.savefig("BTC_US_Time Series_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
+
+
+# ### csv
+
+# In[17]:
 
 
 #Slice datasets csv
@@ -180,7 +212,7 @@ df['BTC_Currency'] = df['BTC'].str.slice(10, 31)
 df.head(3)
 
 
-# In[15]:
+# In[18]:
 
 
 #drop unused Columns
@@ -188,7 +220,16 @@ df=df.drop(['BTC','BTC_Currency'], axis = 1)
 df
 
 
-# In[25]:
+# In[19]:
+
+
+#Change dtypes from str become float
+
+df['BTC_Price'] = df[('BTC_Price')].astype(float)
+df.dtypes
+
+
+# In[20]:
 
 
 #Plot BTC Time Series
@@ -208,35 +249,18 @@ plt.savefig("BTC_US_Time Series_FEBRUARY2022.jpg",transparent=False, bbox_inches
 
 # ## Google Trends
 
-# In[17]:
-
-
-#Change dtypes from str become float
-
-df['BTC_Price'] = df[('BTC_Price')].astype(float)
-df.dtypes
-
-
-# In[18]:
+# In[21]:
 
 
 #https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
-#https://trends.google.com/trends/explore
 
 pytrend = TrendReq()
 keys=['Bitcoin'] 
+country=["US"]
 keys_codes=[pytrend.suggestions(keyword=i)[0] for i in keys] 
 df_codes= pd.DataFrame(keys_codes)
-df_codes
 
-country=["US"] #US
-date_interval='2022-02-01 2022-02-19'
 real_keys=df_codes['mid'].to_list()
-
-#categories
-category = 0 
-search_t = ""
-
 specific_real_key = list(zip(*[iter(real_keys)]*1))
 specific_real_key = [list(x) for x in specific_real_key]
 
@@ -244,8 +268,8 @@ collect = {}
 i = 1
 for country in country:
     for key in specific_real_key:
-        pytrend.build_payload(kw_list=key, timeframe = date_interval, 
-            geo = country, cat=category, gprop=search_t) 
+        pytrend.build_payload(kw_list=key, timeframe = ('2022-02-01 2022-02-20'), 
+            geo = country, cat=0, gprop="") 
         collect[i] = pytrend.interest_over_time()
         i+=1
 df_trends = pd.concat(collect, axis=1)
@@ -256,10 +280,10 @@ df_trends.reset_index(level=0,inplace=True)
 
 #change column names
 df_trends.columns=['date','BTC_Trends_US']  
-df_trends
+df_trends.head(29)
 
 
-# In[23]:
+# In[22]:
 
 
 #Save as HDF5 dataset
@@ -274,19 +298,19 @@ df_trends.to_hdf(h5File_df_trends, 'w')
 print('h5File_df_trends file saved')
 
 
-# In[24]:
+# In[23]:
 
 
 #Load the datasets
 hf_trends = pd.read_hdf(h5File_df_trends)
-hf_trends.head(3)
+hf_trends.tail(3)
 
 
-# In[21]:
+# In[24]:
 
 
 plt.style.use("fivethirtyeight")
-plt.figure(figsize=(12, 4))
+plt.figure(figsize=(15, 4))
 
 plt.xlabel("date")
 plt.ylabel("Index Trends")
@@ -298,7 +322,7 @@ plt.legend()
 plt.savefig("BTC_Trends_FEB2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
 
 
-# In[22]:
+# In[25]:
 
 
 sns.set(color_codes=True, palette='deep')
@@ -308,7 +332,7 @@ ht.tick_params( which='both', axis='both', labelsize=12)
 plt.savefig("BTC_Google_Trends_FEBRUARY2022.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
 
 
-# In[27]:
+# In[26]:
 
 
 #Plot BTC Time Series and Google Trends before standardized
@@ -329,7 +353,7 @@ plt.savefig("BTC_vs Trends_FEBRUARY2022.jpg",transparent=False, bbox_inches='tig
 
 # ### Standarize BTC Price and BTC Trends 
 
-# In[28]:
+# In[27]:
 
 
 from sklearn.preprocessing import MinMaxScaler
@@ -340,7 +364,7 @@ for df in [df]:
 df.head(4)    
 
 
-# In[29]:
+# In[28]:
 
 
 from sklearn.preprocessing import MinMaxScaler
@@ -351,7 +375,7 @@ for hf_trends in [hf_trends]:
 hf_trends.head(4)   
 
 
-# In[30]:
+# In[29]:
 
 
 #Plot STANDARDIZED BTC Time Series and Google Trends
@@ -370,13 +394,13 @@ plt.legend()
 plt.savefig("BTC_vs Trends_FEBRUARY2022_Standardized.jpg",transparent=False, bbox_inches='tight',pad_inches=0.1)
 
 
-# In[31]:
+# In[30]:
 
 
 hf_trends["date"].dtypes
 
 
-# In[32]:
+# In[31]:
 
 
 #Change datatype
@@ -384,31 +408,31 @@ hf_trends["date"] = hf_trends["date"].astype(str)
 hf_trends["date"].dtypes
 
 
-# In[33]:
+# In[32]:
 
 
 hf_trends["Date"] = hf_trends["date"].str.slice(0, 10)
 hf_trends.head(3)
 
 
-# In[34]:
+# In[33]:
 
 
 hf_trends = hf_trends.drop(columns=['date'])
 hf_trends.head(3)
 
 
-# In[35]:
+# In[34]:
 
 
 #Combine 2 dataframes
 dfhf = pd.merge(df,hf_trends, on=["Date", "Date"])
-dfhf
+dfhf.tail(3)
 
 
 # ### Correlation Heatmap
 
-# In[36]:
+# In[35]:
 
 
 # generate heatmap of correlation coefficients 
